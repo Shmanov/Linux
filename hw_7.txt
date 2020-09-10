@@ -1,0 +1,106 @@
+1. Подключить репозиторий с docker любым удобным способом,
+_____________________________________________________________________________________________________________
+igor@ubuntu-virtual:~$ sudo apt update && sudo apt upgrade
+
+igor@ubuntu-virtual:~$ sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+
+igor@ubuntu-virtual:~$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+igor@ubuntu-virtual:~$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+igor@ubuntu-virtual:~$ sudo apt update   
+
+igor@ubuntu-virtual:~$ sudo apt install docker-ce docker-ce-cli containerd.io
+
+igor@ubuntu-virtual:~$ sudo systemctl status docker
+● docker.service - Docker Application Container Engine
+     Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
+     Active: active (running) since Wed 2020-09-09 19:01:35 +04; 9min ago
+TriggeredBy: ● docker.socket
+       Docs: https://docs.docker.com
+   Main PID: 99323 (dockerd)
+      Tasks: 8
+     Memory: 37.2M
+     CGroup: /system.slice/docker.service
+             └─99323 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+
+сен 09 19:01:32 ubuntu-virtual dockerd[99323]: time="2020-09-09T19:01:32.405646784+04:00" level=warning msg="Your kernel does not support >
+сен 09 19:01:32 ubuntu-virtual dockerd[99323]: time="2020-09-09T19:01:32.408349730+04:00" level=warning msg="Your kernel does not support >
+сен 09 19:01:32 ubuntu-virtual dockerd[99323]: time="2020-09-09T19:01:32.408429886+04:00" level=warning msg="Your kernel does not support >
+сен 09 19:01:32 ubuntu-virtual dockerd[99323]: time="2020-09-09T19:01:32.409237718+04:00" level=info msg="Loading containers: start."
+сен 09 19:01:33 ubuntu-virtual dockerd[99323]: time="2020-09-09T19:01:33.294798333+04:00" level=info msg="Default bridge (docker0) is assi>
+сен 09 19:01:34 ubuntu-virtual dockerd[99323]: time="2020-09-09T19:01:34.396842022+04:00" level=info msg="Loading containers: done."
+сен 09 19:01:35 ubuntu-virtual dockerd[99323]: time="2020-09-09T19:01:35.113078637+04:00" level=info msg="Docker daemon" commit=48a66213fe>
+сен 09 19:01:35 ubuntu-virtual dockerd[99323]: time="2020-09-09T19:01:35.136295909+04:00" level=info msg="Daemon has completed initializat>
+сен 09 19:01:35 ubuntu-virtual systemd[1]: Started Docker Application Container Engine.
+сен 09 19:01:35 ubuntu-virtual dockerd[99323]: time="2020-09-09T19:01:35.887295798+04:00" level=info msg="API listen on /run/docker.sock"
+lines 1-21/21 (END) 
+___________________________________________________________________________________________________________
+установить nginx используя утилиту apt потом удалить nginx, используя утилиту dpkg.
+___________________________________________________________________________________________________________
+
+igor@ubuntu-virtual:~$ sudo apt install nginx
+
+igor@ubuntu-virtual:~$ systemctl status nginx
+● nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+     Active: active (running) since Wed 2020-09-09 19:18:15 +04; 1min 59s ago
+       Docs: man:nginx(8)
+   Main PID: 102445 (nginx)
+      Tasks: 2 (limit: 2319)
+     Memory: 3.9M
+     CGroup: /system.slice/nginx.service
+             ├─102445 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;
+             └─102446 nginx: worker process
+
+сен 09 19:18:15 ubuntu-virtual systemd[1]: Starting A high performance web server and a reverse proxy server...
+сен 09 19:18:15 ubuntu-virtual systemd[1]: Started A high performance web server and a reverse proxy server.
+
+igor@ubuntu-virtual:~$ sudo dpkg -r nginx
+___________________________________________________________________________________________________________
+
+2. Установить nginx. 
+___________________________________________________________________________________________________________
+igor@ubuntu-virtual:~$ sudo apt install nginx
+___________________________________________________________________________________________________________
+
+Создать два виртуальных хоста, причем оба из них работают на порту 80.
+___________________________________________________________________________________________________________
+
+На http запрос утилиты curl при указанном хедере Host:
+host1, должен приходить ответ с текстом This is host 1 со статусом 200.
+При указании хедера Host: host2 - ответ с текстом This is host 2 со статусом 200.
+_____________________________________________________________________________________________________________
+igor@ubuntu-virtual:~$ cd /etc/nginx/sites-available/
+igor@ubuntu-virtual:/etc/nginx/sites-available$ sudo cp default site_1
+igor@ubuntu-virtual:/etc/nginx/sites-available$ sudo nano site_1
+
+server {
+        listen 80;
+        server_name site_1;
+
+        location / {
+                return 200 "This is host 1 со статусом 200";
+        }
+
+}
+
+igor@ubuntu-virtual:/etc/nginx/sites-available$ sudo cp site_1 site_2
+igor@ubuntu-virtual:/etc/nginx/sites-available$ sudo nano site_2
+
+server {
+        listen 80;
+        server_name site_2;
+
+        location / {
+                return 200 "This is host 2 со статусом 200";
+        }
+
+}
+igor@ubuntu-virtual:/etc/nginx/sites-available$ sudo ln -s /etc/nginx/sites-available/site_1 /etc/nginx/sites-enabled/site_1
+igor@ubuntu-virtual:/etc/nginx/sites-available$ sudo ln -s /etc/nginx/sites-available/site_2 /etc/nginx/sites-enabled/site_2
+igor@ubuntu-virtual:/etc/nginx/sites-available$ sudo systemctl restart nginx
+igor@ubuntu-virtual:/etc/nginx/sites-available$ curl localhost -H 'Host:site_1'
+This is host 1 со статусом 200igor@ubuntu-virtual:~$
+igor@ubuntu-virtual:/etc/nginx/sites-available$ curl localhost -H 'Host:site_2'
+This is host 2 со статусом 200
